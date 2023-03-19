@@ -14,11 +14,9 @@ using WebSocketSharp.Server;
 public class Program
 {
     private static Process process;
-    private static StyleSheet styleSheet= new StyleSheet(Color.White);
     static void Main(string[] args)
     {
-        styleSheet.AddStyle("INFO", Color.Yellow);
-        CoolConsole.WriteAscii("Instance Manager ",Color.Blue);
+        CoolConsole.WriteAscii("Instance Manager ",Color.Green);
         process = new Process();
         ProcessStartInfo processStartInfo =
             new ProcessStartInfo("java", " -Xms1G -Xmx1G -jar /home/xenu/TESTS/server.jar nogui");
