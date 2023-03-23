@@ -17,6 +17,7 @@
     <ItemGroup>
       <PackageReference Include="Colorful.Console" Version="1.2.15" />
       <PackageReference Include="SockNet" Version="1.1.1" />
+      <PackageReference Include="SuperSocket" Version="2.0.0-beta.15" />
       <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
     </ItemGroup>
 

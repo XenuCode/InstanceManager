@@ -8,107 +8,95 @@ using System.Net.Sockets;
 using System.Text;
 using Colorful;
 using SockNet.ServerSocket;
+using SuperSocket.Channel;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 
 public class Program
 {
-
-    public static string _data;
-    private static Process process;
-    private static WebSocketServer wssv;
     static void Main(string[] args)
     {
-        CoolConsole.WriteAscii("Instance Manager ",Color.Green);
-        process = new Process();
-        ProcessStartInfo processStartInfo =
-            new ProcessStartInfo("java", " -Xms1G -Xmx1G -jar /home/xenu/TESTS/server.jar nogui");
-        processStartInfo.WorkingDirectory = "/home/xenu/TESTS/";
-        process.StartInfo = processStartInfo;
-        process.StartInfo.RedirectStandardInput = true;
-        process.OutputDataReceived += ProcessOnOutputDataReceived;
-        process.ErrorDataReceived += ProcessOnErrorDataReceived;
-        process.Start();
-        Thread.Sleep(2000);
-        var input = process.StandardInput;
+        CoolConsole.WriteAscii("INSTANCE MANAGER",Color.Green);
+        CoolConsole.WriteAscii("0.1.0",Color.Green);
+        We we = new We();
+        var result = we.Start().Result;
 
-        //socket server
-        
-        
-        AppDomain.CurrentDomain.ProcessExit += CurrentDomainOnProcessExit;
+        CoolConsole.ReadKey();
+    }
 
-        new Thread( SocketConnection).Start();
-         
-        for (;;)
+    public class We
+    {
+        private static StreamWriter input;
+        public static WebSocketServer wssv = new WebSocketServer();
+        private static string _data ="";
+        private static Process process;
+        public async Task<Task> Start()
         {
-            string val = CoolConsole.ReadLine();
-            input.WriteLine(val);
+            SocketConnection();
+            process = new Process();
+            ProcessStartInfo processStartInfo = new ProcessStartInfo("java", " -Xms1G -Xmx1G -jar /home/xenu/TESTS/server.jar nogui");
+            processStartInfo.WorkingDirectory = "/home/xenu/TESTS/";
+            process.StartInfo = processStartInfo;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.RedirectStandardInput = true; // Is a MUST!
+            process.EnableRaisingEvents = true;
+            process.OutputDataReceived += ProcessOnOutputDataReceived;
+            process.ErrorDataReceived += ProcessOnErrorDataReceived;
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            Thread.Sleep(2000);
+            input = process.StandardInput;
+
+
+            //socket server
+
+            await process.WaitForExitAsync();
+            return Task.CompletedTask;
         }
-        
-        process.WaitForExit();
-    }
-
-    private static void CurrentDomainOnProcessExit(object? sender, EventArgs e)
-    {
-        CoolConsole.WriteLine("SHUTTING DOWN !!!");
-        process.CloseMainWindow();
-    }
-
-    private static void ProcessOnErrorDataReceived(object sender, DataReceivedEventArgs data)
-    {
-        CoolConsole.WriteLine(data.Data,Color.Red);
-        Singleton.data = (string) data.Data.ToString();
-    }
-
-    private static void ProcessOnOutputDataReceived(object sender, DataReceivedEventArgs data)
-    {
-        CoolConsole.WriteLine(data.Data,Color.Green);
-        Singleton.data = data.Data;
-    }
-
-    private static void SocketConnection()
-    {
-        wssv = new WebSocketServer ( "ws://127.0.0.1:3000");
-        wssv.AddWebSocketService<Laputa> ("/Laputa");
-        wssv.Start ();
-        CoolConsole.WriteLine("Websocket Server Ready", Color.Green);
-        CoolConsole.ReadKey (true);
-        wssv.Stop ();
-    }
-    public class Laputa : WebSocketBehavior
-    {
-        protected override void OnOpen()
+        private static void CurrentDomainOnProcessExit(object? sender, EventArgs e)
         {
-            Send("sending info ...");
-            string s = "sa";
-            for (;;)
+            CoolConsole.WriteLine("SHUTTING DOWN !!!");
+            process.CloseMainWindow();
+        }
+
+        private static void ProcessOnErrorDataReceived(object sender, DataReceivedEventArgs data)
+        {
+            string str = data.Data;
+            CoolConsole.WriteLine("sending:"+str,Color.Red);
+            wssv.WebSocketServices["/ConsoleLogging"].Sessions.Broadcast(str);
+        }
+
+        private static void ProcessOnOutputDataReceived(object sender, DataReceivedEventArgs data)
+        {
+            string str = data.Data;
+            CoolConsole.WriteLine(str,Color.Blue);
+            wssv.WebSocketServices["/ConsoleLogging"].Sessions.Broadcast(str);
+        }
+        private static void SocketConnection()
+        {
+            wssv = new WebSocketServer ( "ws://127.0.0.1:3141");
+            wssv.AddWebSocketService<ConsoleLogging> ("/ConsoleLogging");
+            wssv.Start ();
+            CoolConsole.WriteLine("Websocket Server Ready", Color.Green);
+        }
+        public class ConsoleLogging : WebSocketBehavior
+        {
+            protected override void OnOpen()
             {
-                if (Singleton.data.ToString()!=s)
-                {
-                    CoolConsole.WriteLine("data:" + Singleton.data);
-                    Send(Singleton.data.ToString());
-                    s = Singleton.data.ToString();    
-                }
+                Send("sending info ...");
+                string s = "sa"; 
+                //CoolConsole.WriteLine("connected client" + _data,Color.Green);
+            }
+
+            protected override void OnMessage (MessageEventArgs e)
+            {
+                CoolConsole.WriteLine(e.Data,Color.Aqua);
+                input.WriteLine(e.Data);
             }
         }
-
-        protected override void OnMessage (MessageEventArgs e)
-        {
-            Send("ASDHIOASD");
-        }
     }
-}
-public sealed class Singleton
-{
-    private static readonly Lazy<Singleton> lazy =
-        new Lazy<Singleton>(() => new Singleton());
-
-    public static object data ="";
-    public static Singleton Instance { get { return lazy.Value; } }
-
     
-
-    private Singleton()
-    {
-    }
+    
 }
