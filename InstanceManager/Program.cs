@@ -17,19 +17,22 @@ using Console = System.Console;
 
 public class Program
 {
+    private static StreamWriter input;
+
     static void Main(string[] args)
     {
         CoolConsole.WriteAscii("INSTANCE MANAGER",Color.Green);
         CoolConsole.WriteAscii("0.1.0",Color.Green);
         We we = new We();
-        var result = we.Start().Result;
-
-        CoolConsole.ReadKey();
+        var result = we.Start();
+        for (;;)
+        {
+            input.WriteLine(Console.ReadLine());
+        }
     }
 
     public class We
     {
-        private static StreamWriter input;
         public static WebSocketServer wssv = new WebSocketServer();
         private static string _data ="";
         private static Process process;
@@ -42,7 +45,7 @@ public class Program
                 JsonSerializer serializer = new JsonSerializer();
                 startupConfig= (StartupConfig)serializer.Deserialize(file, typeof(StartupConfig));
             }
-            CoolConsole.WriteLine("Running : "+ startupConfig.instance_path,Color.Chartreuse );
+            CoolConsole.WriteLine("Running: "+ startupConfig.instance_path,Color.Chartreuse );
             CoolConsole.WriteLine("Running with: "+ startupConfig.Xmx+"MB of allocated RAM",Color.Chartreuse );
             CoolConsole.WriteLine("Running with: "+ startupConfig.Xms+"MB of startup RAM",Color.Chartreuse );
             process = new Process();
@@ -93,6 +96,7 @@ public class Program
             wssv.AddWebSocketService<ConsoleLogging> ("/ConsoleLogging");
             wssv.Start ();
             CoolConsole.WriteLine("Websocket Server Ready", Color.Green);
+            CoolConsole.WriteLine("Listening on ws://0.0.0.0:3141/ConsoleLogging", Color.Chartreuse);
         }
         public class ConsoleLogging : WebSocketBehavior
         {
@@ -105,7 +109,7 @@ public class Program
 
             protected override void OnMessage (MessageEventArgs e)
             {
-                CoolConsole.WriteLine(e.Data,Color.Aqua);
+                CoolConsole.WriteLine("remote> "+ e.Data,Color.Aqua);
                 input.WriteLine(e.Data);
             }
         }
