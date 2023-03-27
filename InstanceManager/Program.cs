@@ -7,10 +7,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using Colorful;
+using InstanceManager;
+using Newtonsoft.Json;
 using SockNet.ServerSocket;
 using SuperSocket.Channel;
 using WebSocketSharp;
 using WebSocketSharp.Server;
+using Console = System.Console;
 
 public class Program
 {
@@ -33,8 +36,18 @@ public class Program
         public async Task<Task> Start()
         {
             SocketConnection();
+            StartupConfig startupConfig = new StartupConfig();
+            using (StreamReader file = File.OpenText("instance_config.json"))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                startupConfig= (StartupConfig)serializer.Deserialize(file, typeof(StartupConfig));
+            }
+            CoolConsole.WriteLine("Running : "+ startupConfig.instance_path,Color.Chartreuse );
+            CoolConsole.WriteLine("Running with: "+ startupConfig.Xmx+"MB of allocated RAM",Color.Chartreuse );
+            CoolConsole.WriteLine("Running with: "+ startupConfig.Xms+"MB of startup RAM",Color.Chartreuse );
             process = new Process();
-            ProcessStartInfo processStartInfo = new ProcessStartInfo("java", " -Xms1G -Xmx1G -jar /home/xenu/TESTS/server.jar nogui");
+            
+            ProcessStartInfo processStartInfo = new ProcessStartInfo("java", "-Xms"+startupConfig.Xms+"M -Xmx"+startupConfig.Xmx+"M -jar "+startupConfig.instance_path+" nogui");
             processStartInfo.WorkingDirectory = "/home/xenu/TESTS/";
             process.StartInfo = processStartInfo;
             process.StartInfo.RedirectStandardOutput = true;
@@ -49,7 +62,7 @@ public class Program
             Thread.Sleep(2000);
             input = process.StandardInput;
 
-
+            AppDomain.CurrentDomain.ProcessExit += CurrentDomainOnProcessExit;
             //socket server
 
             await process.WaitForExitAsync();
