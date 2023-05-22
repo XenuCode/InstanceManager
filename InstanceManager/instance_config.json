@@ -1,5 +1,6 @@
 {
-  "Xmx":3500,
-  "Xms":512,
-  "instance_path": "/home/xenu/TESTS/server.jar"
+  "Xmx": 3500,
+  "Xms": 512,
+  "instance_path": "PATH TO SERVER EXECUTABLE",
+  "working_directory": "DIRECTORY IN WHICH TO RUN THE EXECUTABLE (PREFERABLY THE SAME AS THE LOCATION OF EXECUTABLE)"
 }
