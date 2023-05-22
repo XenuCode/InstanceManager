@@ -6,23 +6,28 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <NoWarn>$(NoWarn);NU1605</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
+        <Content Include="..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
         <Content Include="instance_config.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Colorful.Console" Version="1.2.15" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="SockNet" Version="1.1.1" />
-      <PackageReference Include="SuperSocket" Version="2.0.0-beta.15" />
-      <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
+        <PackageReference Include="Colorful.Console" Version="1.2.15" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="SockNet" Version="1.1.1" />
+        <PackageReference Include="SuperSocket" Version="2.0.0-beta.15" />
+        <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Logging" />
     </ItemGroup>
 
 </Project>
